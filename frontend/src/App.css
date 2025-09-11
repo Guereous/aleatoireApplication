@@ -103,3 +103,34 @@
   padding: 8px 0;
   border-radius: 6px;
 }
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.history-item {
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 10px;
+  text-align: left;
+}
+
+.history-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.history-values {
+  margin-top: 6px;
+}

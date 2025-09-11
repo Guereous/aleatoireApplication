@@ -16,7 +16,10 @@ export class AppController {
   }
 
   @Post('api/random')
-  getRandom(@Body() body: { min: number; max: number; count: number }): { numbers: number[] } {
+  getRandom(
+    @Body()
+    body: { min: number; max: number; count: number; sort?: 'asc' | 'desc' | 'none' }
+  ): { numbers: number[] } {
     const min = Number(body?.min);
     const max = Number(body?.max);
     const count = Number(body?.count);
@@ -43,6 +46,13 @@ export class AppController {
       const n = Math.floor(Math.random() * (max - min + 1)) + min;
       unique.add(n);
     }
-    return { numbers: Array.from(unique.values()) };
+    let numbers = Array.from(unique.values());
+    const sortOpt = (body?.sort ?? 'none') as 'asc' | 'desc' | 'none';
+    if (sortOpt === 'asc') {
+      numbers = numbers.sort((a, b) => a - b);
+    } else if (sortOpt === 'desc') {
+      numbers = numbers.sort((a, b) => b - a);
+    }
+    return { numbers };
   }
 }

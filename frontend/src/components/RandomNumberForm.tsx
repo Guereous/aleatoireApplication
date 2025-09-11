@@ -4,6 +4,7 @@ export type RandomFormValues = {
   min: number
   max: number
   count: number
+  sort?: 'asc' | 'desc' | 'none'
 }
 
 type RandomNumberFormProps = {
@@ -14,6 +15,7 @@ export default function RandomNumberForm({ onSubmit }: RandomNumberFormProps) {
   const [min, setMin] = useState<string>('1')
   const [max, setMax] = useState<string>('100')
   const [count, setCount] = useState<string>('5')
+  const [sort, setSort] = useState<'asc' | 'desc' | 'none'>('none')
   const [error, setError] = useState<string>('')
 
   function handleSubmit(e: React.FormEvent) {
@@ -46,7 +48,7 @@ export default function RandomNumberForm({ onSubmit }: RandomNumberFormProps) {
       return
     }
 
-    onSubmit({ min: minNum, max: maxNum, count: countNum })
+    onSubmit({ min: minNum, max: maxNum, count: countNum, sort })
   }
 
   return (
@@ -81,6 +83,15 @@ export default function RandomNumberForm({ onSubmit }: RandomNumberFormProps) {
           required
           min={1}
         />
+      </div>
+
+      <div className="form-row">
+        <label htmlFor="sort">Tri</label>
+        <select id="sort" value={sort} onChange={(e) => setSort(e.target.value as any)}>
+          <option value="none">Aucun</option>
+          <option value="asc">Croissant</option>
+          <option value="desc">Décroissant</option>
+        </select>
       </div>
 
       {error && <div className="form-error" role="alert">{error}</div>}

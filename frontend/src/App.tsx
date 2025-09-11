@@ -3,11 +3,13 @@ import './App.css'
 import ServerInfo from './components/ServerInfo'
 import RandomNumberForm, { type RandomFormValues } from './components/RandomNumberForm'
 import RandomResults from './components/RandomResults'
+import RandomHistory, { type HistoryEntry } from './components/RandomHistory'
 
 function App() {
   const [message, setMessage] = useState<string>('')
   const [timeIso, setTimeIso] = useState<string>('')
   const [results, setResults] = useState<number[]>([])
+  const [history, setHistory] = useState<HistoryEntry[]>([])
 
   useEffect(() => {
     const apiUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:3001'
@@ -42,6 +44,13 @@ function App() {
               }
               const data = (await res.json()) as { numbers: number[] }
               setResults(data.numbers)
+              const entry: HistoryEntry = {
+                id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                params: vals,
+                results: data.numbers,
+                timestampIso: new Date().toISOString(),
+              }
+              setHistory((prev) => [entry, ...prev])
             } catch (e: any) {
               setResults([])
               alert(`Erreur backend: ${e.message}`)
@@ -49,6 +58,7 @@ function App() {
           }}
         />
         <RandomResults values={results} />
+        <RandomHistory items={history} onClear={() => setHistory([])} />
       </section>
     </div>
   )
