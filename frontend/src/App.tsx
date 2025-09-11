@@ -42,7 +42,7 @@ function App() {
                 const text = await res.text()
                 throw new Error(text || `HTTP ${res.status}`)
               }
-              const data = (await res.json()) as { numbers: number[] }
+              const data = (await res.json()) as { numbers: number[]; persistedId?: string }
               setResults(data.numbers)
               const entry: HistoryEntry = {
                 id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,

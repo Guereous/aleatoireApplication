@@ -5,6 +5,8 @@ export type RandomFormValues = {
   max: number
   count: number
   sort?: 'asc' | 'desc' | 'none'
+  noDuplicates?: boolean
+  persist?: boolean
 }
 
 type RandomNumberFormProps = {
@@ -16,6 +18,8 @@ export default function RandomNumberForm({ onSubmit }: RandomNumberFormProps) {
   const [max, setMax] = useState<string>('100')
   const [count, setCount] = useState<string>('5')
   const [sort, setSort] = useState<'asc' | 'desc' | 'none'>('none')
+  const [noDuplicates, setNoDuplicates] = useState<boolean>(true)
+  const [persist, setPersist] = useState<boolean>(false)
   const [error, setError] = useState<string>('')
 
   function handleSubmit(e: React.FormEvent) {
@@ -43,12 +47,12 @@ export default function RandomNumberForm({ onSubmit }: RandomNumberFormProps) {
       return
     }
     const rangeSize = maxNum - minNum + 1
-    if (countNum > rangeSize) {
+    if (noDuplicates && countNum > rangeSize) {
       setError(`La quantité (${countNum}) dépasse la taille de plage (${rangeSize}).`)
       return
     }
 
-    onSubmit({ min: minNum, max: maxNum, count: countNum, sort })
+    onSubmit({ min: minNum, max: maxNum, count: countNum, sort, noDuplicates, persist })
   }
 
   return (
@@ -92,6 +96,28 @@ export default function RandomNumberForm({ onSubmit }: RandomNumberFormProps) {
           <option value="asc">Croissant</option>
           <option value="desc">Décroissant</option>
         </select>
+      </div>
+
+      <div className="form-row">
+        <label>
+          <input
+            type="checkbox"
+            checked={noDuplicates}
+            onChange={(e) => setNoDuplicates(e.target.checked)}
+          />
+          Interdire doublons
+        </label>
+      </div>
+
+      <div className="form-row">
+        <label>
+          <input
+            type="checkbox"
+            checked={persist}
+            onChange={(e) => setPersist(e.target.checked)}
+          />
+          Persister (BDD)
+        </label>
       </div>
 
       {error && <div className="form-error" role="alert">{error}</div>}
