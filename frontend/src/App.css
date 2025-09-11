@@ -5,6 +5,15 @@
   text-align: center;
 }
 
+.app-container {
+  padding: 24px;
+  font-family: sans-serif;
+}
+
+.server-info p {
+  margin: 0.5rem 0;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;

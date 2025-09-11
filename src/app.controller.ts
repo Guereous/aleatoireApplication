@@ -9,4 +9,9 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('api/time')
+  getTime(): { nowIso: string } {
+    return { nowIso: new Date().toISOString() };
+  }
 }
