@@ -1,10 +1,13 @@
 ﻿import { useEffect, useState } from 'react'
 import './App.css'
 import ServerInfo from './components/ServerInfo'
+import RandomNumberForm, { type RandomFormValues } from './components/RandomNumberForm'
+import RandomResults from './components/RandomResults'
 
 function App() {
   const [message, setMessage] = useState<string>('')
   const [timeIso, setTimeIso] = useState<string>('')
+  const [results, setResults] = useState<number[]>([])
 
   useEffect(() => {
     const apiUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:3001'
@@ -22,6 +25,31 @@ function App() {
   return (
     <div className="app-container">
       <ServerInfo title="Frontend React" message={message} timeIso={timeIso} />
+      <section className="card">
+        <h2>Génération de nombres aléatoires</h2>
+        <RandomNumberForm
+          onSubmit={async (vals: RandomFormValues) => {
+            const apiUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:3001'
+            try {
+              const res = await fetch(`${apiUrl}/api/random`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(vals),
+              })
+              if (!res.ok) {
+                const text = await res.text()
+                throw new Error(text || `HTTP ${res.status}`)
+              }
+              const data = (await res.json()) as { numbers: number[] }
+              setResults(data.numbers)
+            } catch (e: any) {
+              setResults([])
+              alert(`Erreur backend: ${e.message}`)
+            }
+          }}
+        />
+        <RandomResults values={results} />
+      </section>
     </div>
   )
 }

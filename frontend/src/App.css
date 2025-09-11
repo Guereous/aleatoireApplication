@@ -49,3 +49,57 @@
 .read-the-docs {
   color: #888;
 }
+
+.random-form {
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+  margin: 1rem auto;
+  text-align: left;
+}
+
+.random-form .form-row {
+  display: grid;
+  gap: 6px;
+}
+
+.random-form input[type="number"] {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.random-form .form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.random-form button {
+  padding: 8px 14px;
+}
+
+.form-error {
+  color: #b00020;
+  background: #ffe6e9;
+  border: 1px solid #ffccd2;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.results {
+  margin-top: 1rem;
+}
+
+.results-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 8px;
+}
+
+.results-list li {
+  border: 1px solid #ddd;
+  padding: 8px 0;
+  border-radius: 6px;
+}
