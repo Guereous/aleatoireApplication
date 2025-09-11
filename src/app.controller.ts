@@ -1,12 +1,14 @@
 import { Body, Controller, Get, Post, BadRequestException } from '@nestjs/common';
 import { AppService } from './app.service';
 import { RandomService } from './random.service';
+import { SessionService } from './session.service';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly randomService: RandomService,
+    private readonly sessionService: SessionService,
   ) {}
 
   @Get()
@@ -29,8 +31,9 @@ export class AppController {
       sort?: 'asc' | 'desc' | 'none';
       noDuplicates?: boolean;
       persist?: boolean;
+      sessionId?: string;
     },
-  ): { numbers: number[]; persistedId?: string } {
+  ): { numbers: number[]; persistedId?: string; sessionId: string } {
     const min = Number(body?.min);
     const max = Number(body?.max);
     const count = Number(body?.count);
@@ -52,15 +55,37 @@ export class AppController {
       throw new BadRequestException(`count (${count}) dépasse la taille de plage (${rangeSize})`);
     }
 
+    // Gestion des sessions
+    let sessionId = body?.sessionId;
+    if (!sessionId) {
+      sessionId = this.sessionService.createSession();
+    } else {
+      // Vérifier que la session existe
+      const session = this.sessionService.getSession(sessionId);
+      if (!session) {
+        throw new BadRequestException('Session invalide');
+      }
+    }
+
     const noDuplicates = Boolean(body?.noDuplicates);
     let numbers: number[] = [];
+    
     if (noDuplicates) {
+      // Récupérer les numéros déjà tirés dans cette session
+      const alreadyDrawn = this.sessionService.getDrawnNumbers(sessionId);
       const unique = new Set<number>();
-      while (unique.size < count) {
+      
+      // Ajouter les numéros déjà tirés pour éviter les doublons
+      alreadyDrawn.forEach(n => unique.add(n));
+      
+      while (unique.size < alreadyDrawn.size + count) {
         const n = Math.floor(Math.random() * (max - min + 1)) + min;
         unique.add(n);
       }
-      numbers = Array.from(unique.values());
+      
+      // Extraire seulement les nouveaux numéros
+      const newNumbers = Array.from(unique).filter(n => !alreadyDrawn.has(n));
+      numbers = newNumbers.slice(0, count);
     } else {
       for (let i = 0; i < count; i++) {
         const n = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -73,6 +98,9 @@ export class AppController {
     } else if (sortOpt === 'desc') {
       numbers = numbers.sort((a, b) => b - a);
     }
+    // Ajouter les nouveaux numéros à la session
+    this.sessionService.addDrawnNumbers(sessionId, numbers);
+
     let persistedId: string | undefined = undefined;
     if (body?.persist) {
       persistedId = this.randomService.persistDraw({
@@ -80,6 +108,6 @@ export class AppController {
         results: numbers,
       });
     }
-    return { numbers, persistedId };
+    return { numbers, persistedId, sessionId };
   }
 }

@@ -7,13 +7,16 @@ export type RandomFormValues = {
   sort?: 'asc' | 'desc' | 'none'
   noDuplicates?: boolean
   persist?: boolean
+  sessionId?: string
 }
 
 type RandomNumberFormProps = {
   onSubmit: (values: RandomFormValues) => void
+  sessionId?: string
+  onNewSession: () => void
 }
 
-export default function RandomNumberForm({ onSubmit }: RandomNumberFormProps) {
+export default function RandomNumberForm({ onSubmit, sessionId, onNewSession }: RandomNumberFormProps) {
   const [min, setMin] = useState<string>('1')
   const [max, setMax] = useState<string>('100')
   const [count, setCount] = useState<string>('5')
@@ -52,7 +55,7 @@ export default function RandomNumberForm({ onSubmit }: RandomNumberFormProps) {
       return
     }
 
-    onSubmit({ min: minNum, max: maxNum, count: countNum, sort, noDuplicates, persist })
+    onSubmit({ min: minNum, max: maxNum, count: countNum, sort, noDuplicates, persist, sessionId })
   }
 
   return (
@@ -123,8 +126,15 @@ export default function RandomNumberForm({ onSubmit }: RandomNumberFormProps) {
       {error && <div className="form-error" role="alert">{error}</div>}
 
       <div className="form-actions">
+        <button type="button" onClick={onNewSession}>Nouvelle session</button>
         <button type="submit">Générer</button>
       </div>
+      
+      {sessionId && (
+        <div className="session-info">
+          <small>Session: {sessionId}</small>
+        </div>
+      )}
     </form>
   )
 }

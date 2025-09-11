@@ -10,6 +10,7 @@ function App() {
   const [timeIso, setTimeIso] = useState<string>('')
   const [results, setResults] = useState<number[]>([])
   const [history, setHistory] = useState<HistoryEntry[]>([])
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     const apiUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:3001'
@@ -30,6 +31,8 @@ function App() {
       <section className="card">
         <h2>Génération de nombres aléatoires</h2>
         <RandomNumberForm
+          sessionId={sessionId}
+          onNewSession={() => setSessionId(undefined)}
           onSubmit={async (vals: RandomFormValues) => {
             const apiUrl = (import.meta as any).env.VITE_API_URL || 'http://localhost:3001'
             try {
@@ -42,8 +45,9 @@ function App() {
                 const text = await res.text()
                 throw new Error(text || `HTTP ${res.status}`)
               }
-              const data = (await res.json()) as { numbers: number[]; persistedId?: string }
+              const data = (await res.json()) as { numbers: number[]; persistedId?: string; sessionId: string }
               setResults(data.numbers)
+              setSessionId(data.sessionId)
               const entry: HistoryEntry = {
                 id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
                 params: vals,
