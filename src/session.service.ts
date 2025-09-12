@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 type SessionData = {
   id: string;
+  name: string;
   drawnNumbers: Set<number>;
   createdAt: Date;
 }
@@ -10,10 +11,12 @@ type SessionData = {
 export class SessionService {
   private sessions = new Map<string, SessionData>();
 
-  createSession(): string {
+  createSession(name?: string): string {
     const id = `session_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const sessionName = name || `Session ${new Date().toLocaleString()}`;
     this.sessions.set(id, {
       id,
+      name: sessionName,
       drawnNumbers: new Set(),
       createdAt: new Date(),
     });
@@ -41,6 +44,10 @@ export class SessionService {
   }
 
   getAllSessions(): SessionData[] {
-    return Array.from(this.sessions.values());
+    return Array.from(this.sessions.values()).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  findSessionByName(name: string): SessionData | undefined {
+    return Array.from(this.sessions.values()).find(session => session.name === name);
   }
 }

@@ -21,6 +21,19 @@ export class AppController {
     return { nowIso: new Date().toISOString() };
   }
 
+  @Get('api/sessions')
+  getSessions(): { sessions: Array<{ id: string; name: string; createdAt: string; drawnCount: number }> } {
+    const sessions = this.sessionService.getAllSessions();
+    return {
+      sessions: sessions.map(session => ({
+        id: session.id,
+        name: session.name,
+        createdAt: session.createdAt.toISOString(),
+        drawnCount: session.drawnNumbers.size,
+      }))
+    };
+  }
+
   @Post('api/random')
   getRandom(
     @Body()
@@ -32,6 +45,7 @@ export class AppController {
       noDuplicates?: boolean;
       persist?: boolean;
       sessionId?: string;
+      sessionName?: string;
     },
   ): { numbers: number[]; persistedId?: string; sessionId: string } {
     const min = Number(body?.min);
@@ -50,15 +64,27 @@ export class AppController {
     if (count < 1) {
       throw new BadRequestException('count doit être ≥ 1');
     }
+
+    const noDuplicates = Boolean(body?.noDuplicates);
     const rangeSize = max - min + 1;
-    if (count > rangeSize) {
+    if (noDuplicates && count > rangeSize) {
       throw new BadRequestException(`count (${count}) dépasse la taille de plage (${rangeSize})`);
     }
 
     // Gestion des sessions
     let sessionId = body?.sessionId;
     if (!sessionId) {
-      sessionId = this.sessionService.createSession();
+      // Chercher par nom si fourni, sinon créer une nouvelle session
+      if (body?.sessionName) {
+        const existingSession = this.sessionService.findSessionByName(body.sessionName);
+        if (existingSession) {
+          sessionId = existingSession.id;
+        } else {
+          sessionId = this.sessionService.createSession(body.sessionName);
+        }
+      } else {
+        sessionId = this.sessionService.createSession();
+      }
     } else {
       // Vérifier que la session existe
       const session = this.sessionService.getSession(sessionId);
@@ -66,21 +92,38 @@ export class AppController {
         throw new BadRequestException('Session invalide');
       }
     }
-
-    const noDuplicates = Boolean(body?.noDuplicates);
     let numbers: number[] = [];
     
     if (noDuplicates) {
       // Récupérer les numéros déjà tirés dans cette session
       const alreadyDrawn = this.sessionService.getDrawnNumbers(sessionId);
+      const rangeSize = max - min + 1;
+      const availableNumbers = rangeSize - alreadyDrawn.size;
+      
+      // Vérifier s'il reste assez de numéros disponibles
+      if (availableNumbers < count) {
+        throw new BadRequestException(
+          `Plus assez de numéros disponibles. Il reste ${availableNumbers} numéros dans la plage [${min}-${max}], mais vous demandez ${count} numéros.`
+        );
+      }
+      
       const unique = new Set<number>();
       
       // Ajouter les numéros déjà tirés pour éviter les doublons
       alreadyDrawn.forEach(n => unique.add(n));
       
-      while (unique.size < alreadyDrawn.size + count) {
+      // Générer les nouveaux numéros avec une limite de sécurité
+      let attempts = 0;
+      const maxAttempts = rangeSize * 10; // Limite de sécurité
+      
+      while (unique.size < alreadyDrawn.size + count && attempts < maxAttempts) {
         const n = Math.floor(Math.random() * (max - min + 1)) + min;
         unique.add(n);
+        attempts++;
+      }
+      
+      if (attempts >= maxAttempts) {
+        throw new BadRequestException('Impossible de générer les numéros demandés. Veuillez réessayer.');
       }
       
       // Extraire seulement les nouveaux numéros

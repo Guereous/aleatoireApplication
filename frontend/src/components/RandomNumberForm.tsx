@@ -8,6 +8,7 @@ export type RandomFormValues = {
   noDuplicates?: boolean
   persist?: boolean
   sessionId?: string
+  sessionName?: string
 }
 
 type RandomNumberFormProps = {
@@ -23,6 +24,7 @@ export default function RandomNumberForm({ onSubmit, sessionId, onNewSession }: 
   const [sort, setSort] = useState<'asc' | 'desc' | 'none'>('none')
   const [noDuplicates, setNoDuplicates] = useState<boolean>(true)
   const [persist, setPersist] = useState<boolean>(false)
+  const [sessionName, setSessionName] = useState<string>('')
   const [error, setError] = useState<string>('')
 
   function handleSubmit(e: React.FormEvent) {
@@ -55,7 +57,7 @@ export default function RandomNumberForm({ onSubmit, sessionId, onNewSession }: 
       return
     }
 
-    onSubmit({ min: minNum, max: maxNum, count: countNum, sort, noDuplicates, persist, sessionId })
+    onSubmit({ min: minNum, max: maxNum, count: countNum, sort, noDuplicates, persist, sessionId, sessionName: sessionName.trim() || undefined })
   }
 
   return (
@@ -121,6 +123,17 @@ export default function RandomNumberForm({ onSubmit, sessionId, onNewSession }: 
           />
           Persister (BDD)
         </label>
+      </div>
+
+      <div className="form-row">
+        <label htmlFor="sessionName">Nom de session (optionnel)</label>
+        <input
+          id="sessionName"
+          type="text"
+          value={sessionName}
+          onChange={(e) => setSessionName(e.target.value)}
+          placeholder="Ex: Loto du 15/01"
+        />
       </div>
 
       {error && <div className="form-error" role="alert">{error}</div>}
