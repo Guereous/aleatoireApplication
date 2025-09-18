@@ -1,5 +1,3 @@
-import React from 'react'
-
 type ServerInfoProps = {
   title: string
   message: string

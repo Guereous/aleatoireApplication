@@ -1,4 +1,3 @@
-import React from 'react'
 
 type RandomResultsProps = {
   values: number[]
