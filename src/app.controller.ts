@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, BadRequestException } from '@nestjs/common';
+import { Body, Controller, Get, Post, BadRequestException, UseGuards, Request } from '@nestjs/common';
 import { AppService } from './app.service';
 import { RandomService } from './random.service';
 import { SessionService } from './session.service';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 
 @Controller()
 export class AppController {
@@ -22,8 +23,10 @@ export class AppController {
   }
 
   @Get('api/sessions')
-  getSessions(): { sessions: Array<{ id: string; name: string; createdAt: string; drawnCount: number }> } {
-    const sessions = this.sessionService.getAllSessions();
+  @UseGuards(JwtAuthGuard)
+  getSessions(@Request() req: any): { sessions: Array<{ id: string; name: string; createdAt: string; drawnCount: number }> } {
+    const userId = req.user.id;
+    const sessions = this.sessionService.getSessionsByUser(userId);
     return {
       sessions: sessions.map(session => ({
         id: session.id,
@@ -35,6 +38,7 @@ export class AppController {
   }
 
   @Post('api/random')
+  @UseGuards(JwtAuthGuard)
   getRandom(
     @Body()
     body: {
@@ -47,7 +51,9 @@ export class AppController {
       sessionId?: string;
       sessionName?: string;
     },
+    @Request() req: any,
   ): { numbers: number[]; persistedId?: string; sessionId: string } {
+    const userId = req.user.id;
     const min = Number(body?.min);
     const max = Number(body?.max);
     const count = Number(body?.count);
@@ -77,18 +83,18 @@ export class AppController {
       // Chercher par nom si fourni, sinon créer une nouvelle session
       if (body?.sessionName) {
         const existingSession = this.sessionService.findSessionByName(body.sessionName);
-        if (existingSession) {
+        if (existingSession && existingSession.userId === userId) {
           sessionId = existingSession.id;
         } else {
-          sessionId = this.sessionService.createSession(body.sessionName);
+          sessionId = this.sessionService.createSession(body.sessionName, userId);
         }
       } else {
-        sessionId = this.sessionService.createSession();
+        sessionId = this.sessionService.createSession(undefined, userId);
       }
     } else {
-      // Vérifier que la session existe
+      // Vérifier que la session existe et appartient à l'utilisateur
       const session = this.sessionService.getSession(sessionId);
-      if (!session) {
+      if (!session || session.userId !== userId) {
         throw new BadRequestException('Session invalide');
       }
     }

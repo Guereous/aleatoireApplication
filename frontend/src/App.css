@@ -10,6 +10,20 @@
   font-family: sans-serif;
 }
 
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.app-header h1 {
+  margin: 0;
+  color: #333;
+}
+
 .server-info p {
   margin: 0.5rem 0;
 }
@@ -209,4 +223,79 @@
   gap: 12px;
   font-size: 0.85rem;
   color: #666;
+}
+
+/* Styles d'authentification */
+.login-btn, .logout-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.login-btn {
+  background: #4285f4;
+  color: white;
+}
+
+.login-btn:hover {
+  background: #3367d6;
+}
+
+.logout-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.logout-btn:hover {
+  background: #c82333;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.login-loading, .loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.auth-required {
+  text-align: center;
+  padding: 40px 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.auth-required h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.auth-required p {
+  color: #666;
+  margin: 0;
 }
